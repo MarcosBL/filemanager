@@ -77,7 +77,7 @@ class EmbeddedFileManager extends Component
         $this->showHeader = $showHeader;
         $this->showSidebar = $showSidebar;
         $this->defaultViewMode = $defaultViewMode;
-        $this->viewMode = $defaultViewMode;
+        $this->viewMode = session($this->getViewModeSessionKey(), $defaultViewMode);
         $this->disk = $disk;
         $this->target = $target;
         $this->initialFolder = $initialFolder;
@@ -227,7 +227,15 @@ class EmbeddedFileManager extends Component
 
     public function setViewMode(string $mode): void
     {
-        $this->viewMode = $mode;
+        if (in_array($mode, ['grid', 'list'], true)) {
+            $this->viewMode = $mode;
+            session()->put($this->getViewModeSessionKey(), $mode);
+        }
+    }
+
+    protected function getViewModeSessionKey(): string
+    {
+        return 'filemanager.embedded.view_mode';
     }
 
     public function isSelected(string $itemId): bool

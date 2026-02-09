@@ -61,6 +61,7 @@ class FileSystemItem extends Model implements FileSystemItemInterface
         'type',
         'file_type',
         'parent_id',
+        'directory',
         'size',
         'duration',
         'thumbnail',
@@ -312,20 +313,21 @@ class FileSystemItem extends Model implements FileSystemItemInterface
     /**
      * Get folder tree structure for sidebar.
      */
-    public static function getFolderTree(?int $parentId = null): array
+    public static function getFolderTree(?int $parentId = null, ?string $directory = null): array
     {
         $folders = static::where('type', FileSystemItemType::Folder->value)
             ->where('parent_id', $parentId)
+            ->when($directory !== null, fn ($q) => $q->where('directory', $directory))
             ->orderBy('name')
             ->get();
 
-        return $folders->map(function ($folder) {
+        return $folders->map(function ($folder) use ($directory) {
             return [
                 'id' => $folder->id,
                 'name' => $folder->name,
                 'depth' => $folder->getDepth(),
                 'file_count' => $folder->getDirectFileCount(),
-                'children' => static::getFolderTree($folder->id),
+                'children' => static::getFolderTree($folder->id, $directory),
             ];
         })->toArray();
     }
@@ -333,9 +335,10 @@ class FileSystemItem extends Model implements FileSystemItemInterface
     /**
      * Get items in a folder (by parent_id).
      */
-    public static function getItemsInFolder(?int $parentId = null): \Illuminate\Database\Eloquent\Collection
+    public static function getItemsInFolder(?int $parentId = null, ?string $directory = null): \Illuminate\Database\Eloquent\Collection
     {
         return static::where('parent_id', $parentId)
+            ->when($directory !== null, fn ($q) => $q->where('directory', $directory))
             ->orderByRaw("CASE WHEN type = '" . FileSystemItemType::Folder->value . "' THEN 0 ELSE 1 END")
             ->orderBy('name')
             ->get();

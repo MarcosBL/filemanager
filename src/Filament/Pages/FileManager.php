@@ -205,6 +205,7 @@ class FileManager extends Page
 
     public function mount(): void
     {
+        $this->viewMode = session($this->getViewModeSessionKey(), 'grid');
         $this->expandedFolders = ['root'];
 
         // If navigating to a specific folder, expand its parent folders
@@ -431,7 +432,15 @@ class FileManager extends Page
      */
     public function setViewMode(string $mode): void
     {
-        $this->viewMode = $mode;
+        if (in_array($mode, ['grid', 'list'], true)) {
+            $this->viewMode = $mode;
+            session()->put($this->getViewModeSessionKey(), $mode);
+        }
+    }
+
+    protected function getViewModeSessionKey(): string
+    {
+        return 'filemanager.page.view_mode';
     }
 
     /**

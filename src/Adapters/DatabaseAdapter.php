@@ -137,7 +137,7 @@ class DatabaseAdapter implements FileManagerAdapterInterface
     public function getItems(?string $path = null): Collection
     {
         $parentId = $this->pathToFolderId($path);
-        $items = $this->model()::getItemsInFolder($parentId);
+        $items = $this->model()::getItemsInFolder($parentId, $this->directory);
 
         return $this->wrapCollection($items);
     }
@@ -148,6 +148,7 @@ class DatabaseAdapter implements FileManagerAdapterInterface
 
         $folders = $this->model()::where('type', 'folder')
             ->where('parent_id', $parentId)
+            ->when($this->directory, fn ($q) => $q->where('directory', $this->directory))
             ->orderBy('name')
             ->get();
 
@@ -169,7 +170,7 @@ class DatabaseAdapter implements FileManagerAdapterInterface
         }
 
         // Full recursive tree (works well for database mode)
-        return $this->model()::getFolderTree();
+        return $this->model()::getFolderTree(null, $this->directory);
     }
 
     /**
@@ -186,6 +187,7 @@ class DatabaseAdapter implements FileManagerAdapterInterface
 
         $folders = $this->model()::where('type', 'folder')
             ->where('parent_id', $parentId)
+            ->when($this->directory, fn ($q) => $q->where('directory', $this->directory))
             ->orderBy('name')
             ->get();
 
@@ -253,6 +255,7 @@ class DatabaseAdapter implements FileManagerAdapterInterface
                 'name' => $name,
                 'type' => 'folder',
                 'parent_id' => $parentId,
+                'directory' => $this->directory,
             ]);
 
             return $this->wrap($folder);
@@ -296,6 +299,7 @@ class DatabaseAdapter implements FileManagerAdapterInterface
                         'type' => 'file',
                         'file_type' => $fileType,
                         'parent_id' => $parentId,
+                        'directory' => $this->directory,
                         'size' => $size,
                         'storage_path' => $storedPath,
                     ]);
