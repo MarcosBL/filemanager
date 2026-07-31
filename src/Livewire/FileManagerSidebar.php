@@ -243,7 +243,7 @@ class FileManagerSidebar extends Component
     {
         if (!$this->getAuthorizationService()->canCreate()) {
             Notification::make()
-                ->title('You are not authorized to create folders')
+                ->title(__('filemanager::filemanager.not_authorized_create_folders'))
                 ->danger()
                 ->send();
             return;
@@ -274,7 +274,7 @@ class FileManagerSidebar extends Component
         $this->subfolderParentPath = null;
 
         Notification::make()
-            ->title('Folder created successfully')
+            ->title(__('filemanager::filemanager.folder_created'))
             ->success()
             ->send();
 
@@ -311,8 +311,8 @@ class FileManagerSidebar extends Component
 
         if (!$item) {
             Notification::make()
-                ->title('Folder not found')
-                ->body('This folder may have been moved or deleted.')
+                ->title(__('filemanager::filemanager.folder_not_found_title'))
+                ->body(__('filemanager::filemanager.folder_not_found_body'))
                 ->warning()
                 ->send();
             $this->dispatch('close-modal', id: 'sidebar-rename-modal');
@@ -321,7 +321,7 @@ class FileManagerSidebar extends Component
 
         if (!$this->getAuthorizationService()->canUpdate(null, $item)) {
             Notification::make()
-                ->title('You are not authorized to rename this folder')
+                ->title(__('filemanager::filemanager.not_authorized_rename_folder'))
                 ->danger()
                 ->send();
             return;
@@ -338,7 +338,7 @@ class FileManagerSidebar extends Component
             $this->renameItemName = '';
 
             Notification::make()
-                ->title('Folder renamed successfully')
+                ->title(__('filemanager::filemanager.folder_renamed'))
                 ->success()
                 ->send();
 
@@ -348,7 +348,7 @@ class FileManagerSidebar extends Component
             $this->dispatch('filemanager-folder-changed');
         } else {
             Notification::make()
-                ->title(is_string($result) ? $result : 'Failed to rename folder')
+                ->title(is_string($result) ? $result : __('filemanager::filemanager.failed_rename_folder'))
                 ->danger()
                 ->send();
         }
@@ -385,8 +385,8 @@ class FileManagerSidebar extends Component
 
         if (!$item) {
             Notification::make()
-                ->title('Folder not found')
-                ->body('This folder may have been moved or deleted.')
+                ->title(__('filemanager::filemanager.folder_not_found_title'))
+                ->body(__('filemanager::filemanager.folder_not_found_body'))
                 ->warning()
                 ->send();
             $this->dispatch('close-modal', id: 'sidebar-move-modal');
@@ -395,7 +395,7 @@ class FileManagerSidebar extends Component
 
         if (!$this->getAuthorizationService()->canUpdate(null, $item)) {
             Notification::make()
-                ->title('You are not authorized to move this folder')
+                ->title(__('filemanager::filemanager.not_authorized_move_folder'))
                 ->danger()
                 ->send();
             return;
@@ -404,7 +404,7 @@ class FileManagerSidebar extends Component
         // Prevent moving folder into itself or its children
         if ($this->moveTargetPath === $this->itemToMoveId) {
             Notification::make()
-                ->title('Cannot move folder into itself')
+                ->title(__('filemanager::filemanager.cannot_move_folder_into_itself'))
                 ->danger()
                 ->send();
             return;
@@ -414,7 +414,7 @@ class FileManagerSidebar extends Component
 
         if ($result === true) {
             Notification::make()
-                ->title('Folder moved successfully')
+                ->title(__('filemanager::filemanager.folder_moved'))
                 ->success()
                 ->send();
 
@@ -426,7 +426,7 @@ class FileManagerSidebar extends Component
             $this->dispatch('filemanager-folder-changed');
         } else {
             Notification::make()
-                ->title(is_string($result) ? $result : 'Failed to move folder')
+                ->title(is_string($result) ? $result : __('filemanager::filemanager.failed_move_folder'))
                 ->danger()
                 ->send();
         }

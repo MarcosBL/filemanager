@@ -277,7 +277,11 @@ class FileManager extends Page
 
             if ($fileSizeKB > $maxSize) {
                 $fileSizeMB = round($fileSizeKB / 1024, 1);
-                $errors[] = "{$file->getClientOriginalName()} ({$fileSizeMB}MB) exceeds the {$maxSizeMB}MB limit";
+                $errors[] = __('filemanager::filemanager.file_size_exceeds_limit', [
+                    'filename' => $file->getClientOriginalName(),
+                    'filesize' => $fileSizeMB,
+                    'maxsize' => $maxSizeMB,
+                ]);
                 unset($this->uploadedFiles[$index]);
             }
         }
@@ -286,7 +290,7 @@ class FileManager extends Page
 
         if (!empty($errors)) {
             Notification::make()
-                ->title('Some files were rejected')
+                ->title(__('filemanager::filemanager.some_files_rejected'))
                 ->body(implode("\n", $errors))
                 ->danger()
                 ->persistent()
@@ -508,8 +512,8 @@ class FileManager extends Page
 
         if (!$item) {
             Notification::make()
-                ->title('Item not found')
-                ->body('This item may have been moved or deleted.')
+                ->title(__('filemanager::filemanager.item_not_found_title'))
+                ->body(__('filemanager::filemanager.item_not_found_body'))
                 ->warning()
                 ->send();
             return;
@@ -602,7 +606,7 @@ class FileManager extends Page
     {
         if (!$this->getAuthorizationService()->canCreate()) {
             Notification::make()
-                ->title('You are not authorized to create folders')
+                ->title(__('filemanager::filemanager.not_authorized_create_folders'))
                 ->danger()
                 ->send();
             return;
@@ -626,7 +630,7 @@ class FileManager extends Page
         $this->newFolderName = '';
 
         Notification::make()
-            ->title('Folder created successfully')
+            ->title(__('filemanager::filemanager.folder_created'))
             ->success()
             ->send();
 
@@ -647,7 +651,7 @@ class FileManager extends Page
 
         if (!$this->getAuthorizationService()->canDeleteAny()) {
             Notification::make()
-                ->title('You are not authorized to delete items')
+                ->title(__('filemanager::filemanager.not_authorized_delete_items'))
                 ->danger()
                 ->send();
             return;
@@ -657,7 +661,7 @@ class FileManager extends Page
         $this->selectedItems = [];
 
         Notification::make()
-            ->title($count . ' item(s) deleted')
+            ->title(__('filemanager::filemanager.items_deleted', ['count' => $count]))
             ->success()
             ->send();
 
@@ -674,8 +678,8 @@ class FileManager extends Page
 
         if (!$item) {
             Notification::make()
-                ->title('Item not found')
-                ->body('This item may have been moved or deleted.')
+                ->title(__('filemanager::filemanager.item_not_found_title'))
+                ->body(__('filemanager::filemanager.item_not_found_body'))
                 ->warning()
                 ->send();
             return;
@@ -683,7 +687,7 @@ class FileManager extends Page
 
         if (!$this->getAuthorizationService()->canDelete(null, $item)) {
             Notification::make()
-                ->title('You are not authorized to delete this item')
+                ->title(__('filemanager::filemanager.not_authorized_delete_item'))
                 ->danger()
                 ->send();
             return;
@@ -695,7 +699,7 @@ class FileManager extends Page
             $this->selectedItems = array_values(array_diff($this->selectedItems, [$itemId]));
 
             Notification::make()
-                ->title('Item deleted')
+                ->title(__('filemanager::filemanager.item_deleted'))
                 ->success()
                 ->send();
 
@@ -703,7 +707,7 @@ class FileManager extends Page
             $this->dispatch('filemanager-folder-changed');
         } else {
             Notification::make()
-                ->title(is_string($result) ? $result : 'Failed to delete item')
+                ->title(is_string($result) ? $result : __('filemanager::filemanager.failed_delete_item'))
                 ->danger()
                 ->send();
         }
@@ -771,14 +775,14 @@ class FileManager extends Page
 
         if ($successCount > 0) {
             Notification::make()
-                ->title("{$successCount} item(s) moved successfully")
+                ->title(__('filemanager::filemanager.items_moved', ['count' => $successCount]))
                 ->success()
                 ->send();
         }
 
         if ($failCount > 0) {
             Notification::make()
-                ->title("{$failCount} item(s) could not be moved")
+                ->title(__('filemanager::filemanager.items_move_failed', ['count' => $failCount]))
                 ->warning()
                 ->send();
         }
@@ -811,7 +815,7 @@ class FileManager extends Page
     {
         if (!$this->getAuthorizationService()->canCreate()) {
             Notification::make()
-                ->title('You are not authorized to create folders')
+                ->title(__('filemanager::filemanager.not_authorized_create_folders'))
                 ->danger()
                 ->send();
             return;
@@ -840,7 +844,7 @@ class FileManager extends Page
         $this->subfolderParentPath = null;
 
         Notification::make()
-            ->title('Subfolder created successfully')
+            ->title(__('filemanager::filemanager.subfolder_created'))
             ->success()
             ->send();
 
@@ -877,8 +881,8 @@ class FileManager extends Page
 
         if (!$item) {
             Notification::make()
-                ->title('Item not found')
-                ->body('This item may have been moved or deleted.')
+                ->title(__('filemanager::filemanager.item_not_found_title'))
+                ->body(__('filemanager::filemanager.item_not_found_body'))
                 ->warning()
                 ->send();
             $this->dispatch('close-modal', id: 'rename-item-modal');
@@ -887,7 +891,7 @@ class FileManager extends Page
 
         if (!$this->getAuthorizationService()->canUpdate(null, $item)) {
             Notification::make()
-                ->title('You are not authorized to rename this item')
+                ->title(__('filemanager::filemanager.not_authorized_rename_item'))
                 ->danger()
                 ->send();
             return;
@@ -904,7 +908,7 @@ class FileManager extends Page
             $this->renameItemName = '';
 
             Notification::make()
-                ->title('Item renamed successfully')
+                ->title(__('filemanager::filemanager.item_renamed'))
                 ->success()
                 ->send();
 
@@ -914,7 +918,7 @@ class FileManager extends Page
             $this->dispatch('filemanager-folder-changed');
         } else {
             Notification::make()
-                ->title(is_string($result) ? $result : 'Failed to rename item')
+                ->title(is_string($result) ? $result : __('filemanager::filemanager.failed_rename_item'))
                 ->danger()
                 ->send();
         }
@@ -927,7 +931,7 @@ class FileManager extends Page
     {
         if (!$this->getAuthorizationService()->canCreate()) {
             Notification::make()
-                ->title('You are not authorized to upload files')
+                ->title(__('filemanager::filemanager.not_authorized_upload_files'))
                 ->danger()
                 ->send();
             return;
@@ -935,7 +939,7 @@ class FileManager extends Page
 
         if (empty($this->uploadedFiles)) {
             Notification::make()
-                ->title('No files selected')
+                ->title(__('filemanager::filemanager.no_files_selected'))
                 ->warning()
                 ->send();
 
@@ -968,14 +972,14 @@ class FileManager extends Page
 
         if ($uploadCount > 0) {
             Notification::make()
-                ->title($uploadCount . ' file(s) uploaded successfully')
+                ->title(__('filemanager::filemanager.files_uploaded', ['count' => $uploadCount]))
                 ->success()
                 ->send();
         }
 
         if (!empty($errors)) {
             Notification::make()
-                ->title('Some files could not be uploaded')
+                ->title(__('filemanager::filemanager.some_files_upload_failed'))
                 ->body(implode("\n", array_slice($errors, 0, 5)))
                 ->danger()
                 ->send();
@@ -1013,8 +1017,8 @@ class FileManager extends Page
 
         if (!$item) {
             Notification::make()
-                ->title('Item not found')
-                ->body('This item may have been moved or deleted.')
+                ->title(__('filemanager::filemanager.item_not_found_title'))
+                ->body(__('filemanager::filemanager.item_not_found_body'))
                 ->warning()
                 ->send();
             $this->dispatch('close-modal', id: 'move-item-modal');
@@ -1023,7 +1027,7 @@ class FileManager extends Page
 
         if (!$this->getAuthorizationService()->canUpdate(null, $item)) {
             Notification::make()
-                ->title('You are not authorized to move this item')
+                ->title(__('filemanager::filemanager.not_authorized_move_item'))
                 ->danger()
                 ->send();
             return;
@@ -1033,7 +1037,7 @@ class FileManager extends Page
 
         if ($result === true) {
             Notification::make()
-                ->title('Item moved successfully')
+                ->title(__('filemanager::filemanager.item_moved'))
                 ->success()
                 ->send();
 
@@ -1045,7 +1049,7 @@ class FileManager extends Page
             $this->dispatch('filemanager-folder-changed');
         } else {
             Notification::make()
-                ->title(is_string($result) ? $result : 'Failed to move item')
+                ->title(is_string($result) ? $result : __('filemanager::filemanager.failed_move_item'))
                 ->danger()
                 ->send();
         }
@@ -1135,7 +1139,7 @@ class FileManager extends Page
         $this->dispatch('$refresh');
 
         Notification::make()
-            ->title('File manager refreshed')
+            ->title(__('filemanager::filemanager.file_manager_refreshed'))
             ->success()
             ->send();
     }

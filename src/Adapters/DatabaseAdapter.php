@@ -247,7 +247,7 @@ class DatabaseAdapter implements FileManagerAdapterInterface
             ->exists();
 
         if ($exists) {
-            return 'A folder with this name already exists';
+            return __('filemanager::filemanager.folder_name_exists');
         }
 
         try {
@@ -260,7 +260,7 @@ class DatabaseAdapter implements FileManagerAdapterInterface
 
             return $this->wrap($folder);
         } catch (\Exception $e) {
-            return 'Failed to create folder: ' . $e->getMessage();
+            return __('filemanager::filemanager.failed_create_folder', ['error' => $e->getMessage()]);
         }
     }
 
@@ -324,7 +324,7 @@ class DatabaseAdapter implements FileManagerAdapterInterface
                 'parentId' => $parentId,
                 'error' => $e->getMessage(),
             ]);
-            return 'Failed to upload file: ' . $e->getMessage();
+            return __('filemanager::filemanager.failed_upload_file', ['error' => $e->getMessage()]);
         }
     }
 
@@ -333,7 +333,7 @@ class DatabaseAdapter implements FileManagerAdapterInterface
         $model = $this->getModelFromIdentifier($identifier);
 
         if (!$model) {
-            return 'Item not found';
+            return __('filemanager::filemanager.item_not_found_title');
         }
 
         try {
@@ -342,7 +342,7 @@ class DatabaseAdapter implements FileManagerAdapterInterface
                 $lockedModel = $this->model()::where('id', $model->id)->lockForUpdate()->first();
 
                 if (!$lockedModel) {
-                    throw new \Exception('Item was deleted by another process');
+                    throw new \Exception(__('filemanager::filemanager.item_deleted_by_another_process'));
                 }
 
                 // Check for duplicate with lock to prevent race conditions
@@ -353,7 +353,7 @@ class DatabaseAdapter implements FileManagerAdapterInterface
                     ->exists();
 
                 if ($exists) {
-                    return 'An item with this name already exists in this folder';
+                    return __('filemanager::filemanager.item_name_exists_in_folder');
                 }
 
                 $lockedModel->name = $newName;
@@ -367,7 +367,7 @@ class DatabaseAdapter implements FileManagerAdapterInterface
                 'newName' => $newName,
                 'error' => $e->getMessage(),
             ]);
-            return 'Failed to rename: ' . $e->getMessage();
+            return __('filemanager::filemanager.failed_rename', ['error' => $e->getMessage()]);
         }
     }
 
@@ -376,14 +376,14 @@ class DatabaseAdapter implements FileManagerAdapterInterface
         $model = $this->getModelFromIdentifier($identifier);
 
         if (!$model) {
-            return 'Item not found';
+            return __('filemanager::filemanager.item_not_found_title');
         }
 
         $newParentId = $this->pathToFolderId($newParentPath);
 
         // Same location check
         if ($model->parent_id === $newParentId) {
-            return 'Item is already in this folder';
+            return __('filemanager::filemanager.item_already_in_folder');
         }
 
         try {
@@ -392,7 +392,7 @@ class DatabaseAdapter implements FileManagerAdapterInterface
                 $lockedModel = $this->model()::where('id', $model->id)->lockForUpdate()->first();
 
                 if (!$lockedModel) {
-                    throw new \Exception('Item was deleted by another process');
+                    throw new \Exception(__('filemanager::filemanager.item_deleted_by_another_process'));
                 }
 
                 // Get target folder with lock
@@ -400,7 +400,7 @@ class DatabaseAdapter implements FileManagerAdapterInterface
                 if ($newParentId) {
                     $targetFolder = $this->model()::where('id', $newParentId)->lockForUpdate()->first();
                     if (!$targetFolder) {
-                        return 'Target folder not found';
+                        return __('filemanager::filemanager.target_folder_not_found');
                     }
                 }
 
@@ -410,7 +410,7 @@ class DatabaseAdapter implements FileManagerAdapterInterface
                     $ancestorIds[] = $targetFolder->id;
 
                     if (in_array($lockedModel->id, $ancestorIds)) {
-                        return 'Cannot move a folder into itself or its descendants';
+                        return __('filemanager::filemanager.cannot_move_into_itself');
                     }
                 }
 
@@ -422,7 +422,7 @@ class DatabaseAdapter implements FileManagerAdapterInterface
                     ->exists();
 
                 if ($exists) {
-                    return 'An item with this name already exists in the destination folder';
+                    return __('filemanager::filemanager.item_name_exists_in_destination');
                 }
 
                 $lockedModel->parent_id = $newParentId;
@@ -436,7 +436,7 @@ class DatabaseAdapter implements FileManagerAdapterInterface
                 'newParentPath' => $newParentPath,
                 'error' => $e->getMessage(),
             ]);
-            return 'Failed to move: ' . $e->getMessage();
+            return __('filemanager::filemanager.failed_move', ['error' => $e->getMessage()]);
         }
     }
 
@@ -445,7 +445,7 @@ class DatabaseAdapter implements FileManagerAdapterInterface
         $model = $this->getModelFromIdentifier($identifier);
 
         if (!$model) {
-            return 'Item not found';
+            return __('filemanager::filemanager.item_not_found_title');
         }
 
         try {
@@ -454,7 +454,7 @@ class DatabaseAdapter implements FileManagerAdapterInterface
                 $lockedModel = $this->model()::where('id', $model->id)->lockForUpdate()->first();
 
                 if (!$lockedModel) {
-                    throw new \Exception('Item was deleted by another process');
+                    throw new \Exception(__('filemanager::filemanager.item_deleted_by_another_process'));
                 }
 
                 $storagePath = $lockedModel->storage_path;
@@ -484,7 +484,7 @@ class DatabaseAdapter implements FileManagerAdapterInterface
                 'identifier' => $identifier,
                 'error' => $e->getMessage(),
             ]);
-            return 'Failed to delete: ' . $e->getMessage();
+            return __('filemanager::filemanager.failed_delete', ['error' => $e->getMessage()]);
         }
     }
 
