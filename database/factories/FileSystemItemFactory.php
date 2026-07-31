@@ -18,6 +18,7 @@ class FileSystemItemFactory extends Factory
             'type' => FileSystemItemType::File->value,
             'file_type' => FileType::Document->value,
             'parent_id' => null,
+            'directory' => config('filemanager.upload.directory', 'uploads'),
             'size' => fake()->numberBetween(1024, 10485760),
             'duration' => null,
             'thumbnail' => null,

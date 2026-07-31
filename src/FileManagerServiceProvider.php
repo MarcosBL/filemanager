@@ -56,6 +56,7 @@ class FileManagerServiceProvider extends PackageServiceProvider
             ->hasMigrations([
                 'create_file_system_items_table',
                 'add_unique_constraint_to_file_system_items_table',
+                'update_file_system_items_table_add_directory',
             ])
             ->runsMigrations()
             ->hasCommands([

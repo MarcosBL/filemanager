@@ -134,6 +134,21 @@ class DatabaseAdapter implements FileManagerAdapterInterface
         return $parentId;
     }
 
+    /**
+     * Constrain a query to this adapter's directory.
+     *
+     * Items at the root of a scope share `parent_id = null`, so duplicate-name
+     * checks that only look at `parent_id` + `name` collide across unrelated
+     * scopes: uploading `plan.pdf` into one scope silently renames it when any
+     * other scope already has a root-level `plan.pdf`, and renaming reports a
+     * conflict with a file the user cannot see. Every duplicate check must go
+     * through here.
+     */
+    protected function scopeQuery($query)
+    {
+        return $query->when($this->directory, fn ($q) => $q->where('directory', $this->directory));
+    }
+
     public function getItems(?string $path = null): Collection
     {
         $parentId = $this->pathToFolderId($path);
@@ -242,9 +257,10 @@ class DatabaseAdapter implements FileManagerAdapterInterface
         $parentId = $this->pathToFolderId($parentPath);
 
         // Check for duplicate
-        $exists = $this->model()::where('parent_id', $parentId)
-            ->where('name', $name)
-            ->exists();
+        $exists = $this->scopeQuery(
+            $this->model()::where('parent_id', $parentId)
+                ->where('name', $name)
+        )->exists();
 
         if ($exists) {
             return __('filemanager::filemanager.folder_name_exists');
@@ -276,10 +292,10 @@ class DatabaseAdapter implements FileManagerAdapterInterface
         try {
             return DB::transaction(function () use ($file, $parentId, $originalName, $extension, $size, $mimeType) {
                 // Check for duplicate with lock to prevent race conditions
-                $exists = $this->model()::where('parent_id', $parentId)
-                    ->where('name', $originalName)
-                    ->lockForUpdate()
-                    ->exists();
+                $exists = $this->scopeQuery(
+                    $this->model()::where('parent_id', $parentId)
+                        ->where('name', $originalName)
+                )->lockForUpdate()->exists();
 
                 if ($exists) {
                     $nameWithoutExt = pathinfo($originalName, PATHINFO_FILENAME);
@@ -346,11 +362,11 @@ class DatabaseAdapter implements FileManagerAdapterInterface
                 }
 
                 // Check for duplicate with lock to prevent race conditions
-                $exists = $this->model()::where('parent_id', $lockedModel->parent_id)
-                    ->where('name', $newName)
-                    ->where('id', '!=', $lockedModel->id)
-                    ->lockForUpdate()
-                    ->exists();
+                $exists = $this->scopeQuery(
+                    $this->model()::where('parent_id', $lockedModel->parent_id)
+                        ->where('name', $newName)
+                        ->where('id', '!=', $lockedModel->id)
+                )->lockForUpdate()->exists();
 
                 if ($exists) {
                     return __('filemanager::filemanager.item_name_exists_in_folder');
@@ -415,11 +431,11 @@ class DatabaseAdapter implements FileManagerAdapterInterface
                 }
 
                 // Check for duplicate name in target folder with lock
-                $exists = $this->model()::where('parent_id', $newParentId)
-                    ->where('name', $lockedModel->name)
-                    ->where('id', '!=', $lockedModel->id)
-                    ->lockForUpdate()
-                    ->exists();
+                $exists = $this->scopeQuery(
+                    $this->model()::where('parent_id', $newParentId)
+                        ->where('name', $lockedModel->name)
+                        ->where('id', '!=', $lockedModel->id)
+                )->lockForUpdate()->exists();
 
                 if ($exists) {
                     return __('filemanager::filemanager.item_name_exists_in_destination');
